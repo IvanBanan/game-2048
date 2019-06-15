@@ -1,0 +1,399 @@
+<html>
+<head>
+
+<title>Release Notes</title>
+<style>
+
+.main-field {
+    display: inline-block;
+    font-size: 25px;
+    border: 1px solid black;
+}
+.main-field div {
+    width: 50px;
+    height: 50px;
+    display: inline-block;
+    vertical-align: middle;
+    border: 1px solid black;
+    line-height: 50px;
+    text-align: center;
+    font-weight: 700;
+    font-family: sans-serif;
+
+}
+.p2 {
+    background-color: rgb(255, 216, 105);
+}
+.p4 {
+    background-color: rgb(255, 199, 41);
+}
+.p8 {
+    background-color: rgb(255, 188, 0);
+}
+.p16 {
+    background-color: rgb(255, 195, 104);
+}
+.p32 {
+    background-color: rgb(255, 174, 51);
+}
+.p64 {
+    background-color: rgb(255, 154, 0);
+}
+.p128 {
+    background-color: rgb(255, 181, 104);
+}
+.p256 {
+    background-color: rgb(255, 155, 52);
+}
+.p512 {
+    background-color: rgb(255, 129, 0);
+}
+.p1024 {
+    font-size: 22px;
+    background-color: rgb(255, 181, 104);
+}
+.p2048 {
+    font-size: 22px;
+    background-color: rgb(255, 155, 52);
+}
+.p4096 {
+    font-size: 22px;
+    background-color: rgb(255, 129, 0);
+}
+</style>
+<body>
+  <div id='Field' class='main-field'>
+  </div>
+
+  <script type="text/javascript">
+
+var arr = [];
+
+document.onkeypress = upKey;
+
+initValues();
+enterColumns();
+enterNewNum();
+enterNewNum();
+refreshBlocks();
+
+
+function enterColumns() {
+    var elem, i, row, col;
+    var field = document.getElementById('Field');
+    for (i = 0; i < 16; i++) {
+        row = Math.floor(i / 4);
+        col = i % 4;
+        
+        if ((col == 0) && (row != 0)) {
+            elem = document.createElement('br');
+            Field.appendChild(elem);
+        }
+        
+        elem = document.createElement('div');
+        elem.id = i;
+        elem.setAttribute('col', col);
+        elem.setAttribute('row', row);
+        //elem.classList.add('block');
+        Field.appendChild(elem);
+    }
+
+}
+
+function initValues() {
+    var row, col;
+    for (row = 0; row < 4; row++) {
+        arr[row] = [];
+        for (col = 0; col < 4; col++) {
+            arr[row][col] = '';
+        }
+    }
+}
+
+function refreshBlocks() {
+    var elem, row, col;
+    var field = document.getElementById('Field');
+    
+    for (row = 0; row < 4; row++) {
+        for (col = 0; col < 4; col++) {
+            elem = field.querySelector('[row="' + row + '"][col="' + col + '"]');
+            elem.innerText = arr[row][col];
+            elem.className = '';
+            elem.classList.add('p'+arr[row][col]);
+        }
+    }
+
+}
+
+function generateNum() {
+    var result, random;
+    random = Math.random();
+    
+    if (random < 0.9) {
+        result = 2;
+    } 
+    else {
+        result = 4;
+    }
+    return result;
+}
+
+function choiseBlock() {
+    var result, freeArr, randBlNum, row, col;
+    freeArr = [];
+    
+    for (row = 0; row < arr.length; row++) {
+        for (col = 0; col < arr[row].length; col++) {
+            if (!arr[row][col]) {
+                freeArr[freeArr.length] = {
+                    row: row,
+                    col: col
+                };
+            }
+        }
+    }
+    
+    if (freeArr.length != 0) {
+        randBlNum = Math.round(Math.random() * (freeArr.length - 1));
+        result = {
+            row: freeArr[randBlNum].row,
+            col: freeArr[randBlNum].col
+        };
+    } 
+    else {
+        result = 'no free!';
+    }
+    
+    return result;
+}
+
+function enterNewNum() {
+    var freeBlock;
+    freeBlock = choiseBlock();
+    
+    if (typeof freeBlock != 'string') {
+        arr[freeBlock.row][freeBlock.col] = generateNum();
+    }
+
+}
+
+function upKey(e) {
+    var result, keyCode;
+    keyCode = e.keyCode;
+    //a
+    if (keyCode == 97) {
+        result = pressA();
+    }
+    //s
+    if (keyCode == 115) {
+        result = pressS();
+    }
+    //d
+    if (keyCode == 100) {
+        result = pressD();
+    }
+    //w
+    if (keyCode == 119) {
+        result = pressW();
+    }
+    
+    if (result) {
+        enterNewNum();
+    }
+    
+    
+    
+    refreshBlocks();
+}
+
+function pressA() {
+    var row, col, i, num, result;
+    result = false;
+    
+    for (row = 0; row < arr.length; row++) {
+        num = undefined,
+        i = undefined;
+        for (col = 0; col < arr[row].length; col++) {
+            if (arr[row][col]) {
+                if (!i && !num) {
+                    i = col;
+                    num = arr[row][col];
+                } 
+                else {
+                    if (num == arr[row][col]) {
+                        arr[row][i] = num * 2;
+                        arr[row][col] = '';
+                        result = true;
+                    }
+                    i = col;
+                    num = arr[row][col];
+                }
+            }
+        }
+        
+        i = undefined;
+        
+        for (col = 0; col < arr[row].length; col++) {
+            if (!arr[row][col]) {
+                if (typeof i != 'number') {
+                    i = col;
+                }
+            } 
+            else {
+                if (typeof i == 'number') {
+                    result = true;
+                    arr[row][i] = arr[row][col];
+                    arr[row][col] = '';
+                    col = i;
+                    i = undefined;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+function pressD() {
+    var row, col, i, num, result;
+    result = false;
+    
+    for (row = 0; row < arr.length; row++) {
+        num = undefined,
+        i = undefined;
+        for (col = arr[row].length - 1; col >= 0; col--) {
+            if (arr[row][col]) {
+                if (!i && !num) {
+                    i = col;
+                    num = arr[row][col];
+                } 
+                else {
+                    if (num == arr[row][col]) {
+                        arr[row][i] = num * 2;
+                        arr[row][col] = '';
+                        result = true;
+                    }
+                    i = col;
+                    num = arr[row][col];
+                }
+            }
+        }
+        
+        i = undefined;
+        
+        for (col = arr[row].length - 1; col >= 0; col--) {
+            if (!arr[row][col]) {
+                if (typeof i != 'number') {
+                    i = col;
+                }
+            } 
+            else {
+                if (typeof i == 'number') {
+                    result = true;
+                    arr[row][i] = arr[row][col];
+                    arr[row][col] = '';
+                    col = i;
+                    i = undefined;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+function pressW() {
+    var row, col, i, num, result;
+    result = false;
+    
+    for (col = 0; col < arr.length; col++) {
+        num = undefined,
+        i = undefined;
+        for (row = 0; row < arr.length; row++) {
+            if (arr[row][col]) {
+                if (!i && !num) {
+                    i = row;
+                    num = arr[row][col];
+                } 
+                else {
+                    if (num == arr[row][col]) {
+                        arr[i][col] = num * 2;
+                        arr[row][col] = '';
+                        result = true;
+                    }
+                    i = row;
+                    num = arr[row][col];
+                }
+            }
+        }
+        
+        i = undefined;
+        
+        for (row = 0; row < arr.length; row++) {
+            if (!arr[row][col]) {
+                if (typeof i != 'number') {
+                    i = row;
+                }
+            } 
+            else {
+                if (typeof i == 'number') {
+                    result = true;
+                    arr[i][col] = arr[row][col];
+                    arr[row][col] = '';
+                    row = i;
+                    i = undefined;
+                }
+            }
+        }
+    }
+    return result;
+}
+
+function pressS() {
+    var row, col, i, num, result;
+    result = false;
+    
+    for (col = 0; col < arr.length; col++) {
+        num = undefined,
+        i = undefined;
+        for (row = arr.length - 1; row >= 0; row--) {
+            if (arr[row][col]) {
+                if (!i && !num) {
+                    i = row;
+                    num = arr[row][col];
+                } 
+                else {
+                    if (num == arr[row][col]) {
+                        arr[i][col] = num * 2;
+                        arr[row][col] = '';
+                        result = true;
+                    }
+                    i = row;
+                    num = arr[row][col];
+                }
+            }
+        }
+        
+        i = undefined;
+        
+        for (row = arr.length - 1; row >= 0; row--) {
+            if (!arr[row][col]) {
+                if (typeof i != 'number') {
+                    i = row;
+                }
+            } 
+            else {
+                if (typeof i == 'number') {
+                    result = true;
+                    arr[i][col] = arr[row][col];
+                    arr[row][col] = '';
+                    row = i;
+                    i = undefined;
+                }
+            }
+        }
+    }
+    return result;
+}
+</script>
+
+</body>
+</html>
